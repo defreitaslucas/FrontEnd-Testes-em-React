@@ -24,7 +24,6 @@ describe('Requisito 3 - testando o FavoritePokemons.js', () => {
     userEvent.click(favoriteEl);
 
     const imgEl = screen.getAllByRole('img');
-    console.log(imgEl);
     expect(imgEl).toHaveLength(2);
   });
 });
