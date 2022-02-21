@@ -6,44 +6,50 @@ import App from '../App';
 import data from '../data';
 
 const MAGIC_NUMBER = 148;
+let buttonNextPokemon;
+let pokemonName;
+beforeEach(() => {
+  renderWithRouter(<App />);
+  buttonNextPokemon = screen.getByRole('button', { name: /Próximo pokémon/i });
+  pokemonName = screen.getByTestId('pokemon-name');
+});
 
 describe('Requisito 5 - testando o Pokedex.js', () => {
   it('Teste se página contém um heading `h2` com o texto `Encountered pokémons`', () => {
-    renderWithRouter(<App />);
     const pokedexH2El = screen.getByRole('heading', { name: 'Encountered pokémons',
       level: 2 });
     expect(pokedexH2El).toBeInTheDocument();
   });
-
-  it(`Teste se é exibido o próximo Pokémon da lista quando o
-  botão 'Próximo pokémon' é clicado.`, () => {
-    renderWithRouter(<App />);
-    const buttonProxEl = screen.getByRole('button', { name: 'Próximo pokémon' });
-    expect(buttonProxEl).toBeInTheDocument();
+  it(`Teste se é exibido o próximo Pokémon da lista
+  quando o botão 'Próximo pokémon' é clicado`, () => {
+    userEvent.click(buttonNextPokemon);
+    expect(screen.getByText('Charmander')).toBeInTheDocument();
+  });
+  it('O botão deve conter o texto "Próximo pokémon"', () => {
+    expect(buttonNextPokemon).toHaveTextContent('Próximo pokémon');
+  });
+  it(`Os próximos Pokémons da lista devem ser mostrados,
+  um a um, ao clicar sucessivamente no botão.`, () => {
     data.forEach((element) => {
-      const pokemonName = screen.getByTestId('pokemon-name');
       if (element.name === pokemonName) {
         expect(pokemonName).toBeInTheDocument();
         if (element.id === MAGIC_NUMBER) {
-          userEvent.click(buttonProxEl);
+          userEvent.click(buttonNextPokemon);
           expect(pokemonName).toBe('Pikachu');
         } else {
-          userEvent.click(buttonProxEl);
+          userEvent.click(buttonNextPokemon);
         }
       }
     });
   });
+});
+describe('Requisito 5 - testando o Pokedex.js', () => {
   it('Teste se é mostrado apenas um Pokémon por vez.', () => {
-    renderWithRouter(<App />);
-    const buttonProxEl = screen.getByRole('button', { name: 'Próximo pokémon' });
-    userEvent.click(buttonProxEl);
-
+    userEvent.click(buttonNextPokemon);
     const imgPokemonEl = screen.getAllByRole('img');
     expect(imgPokemonEl).toHaveLength(1);
   });
-
   it('Teste se a Pokédex tem os botões de filtro', () => {
-    renderWithRouter(<App />);
     const typePokemons = ['Electric',
       'Fire',
       'Bug',
@@ -62,29 +68,25 @@ describe('Requisito 5 - testando o Pokedex.js', () => {
     const buttonAll = screen.getByRole('button', { name: 'All' });
     expect(buttonAll).toBeVisible();
   });
-
   it('Teste se a Pokédex contém um botão para resetar o filtro', () => {
-    renderWithRouter(<App />);
     const buttonAll = screen.getByRole('button', { name: 'All' });
     expect(buttonAll).toHaveTextContent('All');
-
     userEvent.click(buttonAll);
     data.forEach((element) => {
-      const pokemonName = screen.getByTestId('pokemon-name');
-      const buttonNext = screen.getByRole('button', { name: 'Próximo pokémon' });
       expect(pokemonName).toHaveTextContent(element.name);
-      userEvent.click(buttonNext);
+      userEvent.click(buttonNextPokemon);
     });
   });
-
   it('Ao carregar a página, o filtro selecionado deverá ser `All`', () => {
-    renderWithRouter(<App />);
-    const pokemon = screen.getByTestId('pokemon-name');
-    expect(pokemon).toHaveTextContent('Pikachu');
-    const buttonNext = screen.getByRole('button', { name: 'Próximo pokémon' });
-    userEvent.click(buttonNext);
-    expect(pokemon).toHaveTextContent('Charmander');
-    userEvent.click(buttonNext);
-    expect(pokemon).toHaveTextContent('Caterpie');
+    expect(pokemonName).toHaveTextContent('Pikachu');
+    userEvent.click(buttonNextPokemon);
+    expect(pokemonName).toHaveTextContent('Charmander');
+    userEvent.click(buttonNextPokemon);
+    expect(pokemonName).toHaveTextContent('Caterpie');
+  });
+  it('Recupera todos os tests id e verifica quantos existem - stryker', () => {
+    const buttons = screen.getAllByTestId('pokemon-type-button');
+    const testId = 7;
+    expect(buttons.length).toEqual(testId);
   });
 });
